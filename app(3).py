@@ -1,34 +1,51 @@
 import streamlit as st
 import pandas as pd
 
-# Page config
+# 🎯 Page config
 st.set_page_config(page_title="🌍 2019 World Happiness Report", layout="wide")
 
+# 📌 Function to ensure unique column names
+def deduplicate_columns(columns):
+    seen = {}
+    new_columns = []
+    for col in columns:
+        if col in seen:
+            seen[col] += 1
+            new_columns.append(f"{col}_{seen[col]}")
+        else:
+            seen[col] = 0
+            new_columns.append(col)
+    return new_columns
+
+# 🏷️ App Title and Description
 st.title("🌍 2019 World Happiness Report Dashboard")
 st.markdown("""
 Explore, filter, and visualize data from the **2019 World Happiness Report**.  
 Upload the dataset to get started — powered by [Streamlit](https://streamlit.io/) 🚀
 """)
 
-# File uploader
+# 📁 File uploader
 uploaded_file = st.file_uploader("📂 Upload your '2019_world_happiness_report.csv' file", type="csv")
 
 if uploaded_file is not None:
     st.success("✅ File successfully uploaded!")
-
-    # 🛠 Fix duplicate column names automatically
+    
+    # 🧼 Load and clean data
     df = pd.read_csv(uploaded_file)
-    df.columns = pd.io.parsers.ParserBase({'names': df.columns})._maybe_dedup_names(df.columns)
+    df.columns = deduplicate_columns(df.columns)
 
+    # 📊 Data preview
     with st.expander("🔍 Data Preview"):
         st.write("First 5 Rows:")
         st.dataframe(df.head())
         st.write("Last 5 Rows:")
         st.dataframe(df.tail())
 
+    # 📈 Data summary
     with st.expander("📊 Data Summary"):
         st.dataframe(df.describe())
 
+    # 🔎 Filter data
     st.markdown("### 🔎 Filter the Data")
     columns = df.columns.tolist()
     selected_column = st.selectbox("Select a column to filter by", columns)
@@ -39,6 +56,7 @@ if uploaded_file is not None:
     filtered_df = df[df[selected_column] == selected_value]
     st.dataframe(filtered_df)
 
+    # 📉 Plot line chart
     st.markdown("### 📈 Line Chart Visualization")
     numeric_columns = filtered_df.select_dtypes(include='number').columns.tolist()
 
@@ -50,8 +68,7 @@ if uploaded_file is not None:
 
         if st.button("Generate Line Chart"):
             try:
-                chart_data = filtered_df[[x_column, y_column]].dropna()
-                chart_data = chart_data.sort_values(by=x_column)
+                chart_data = filtered_df[[x_column, y_column]].dropna().sort_values(by=x_column)
                 st.line_chart(chart_data.set_index(x_column))
             except Exception as e:
                 st.error(f"⚠️ Could not generate chart: {e}")
