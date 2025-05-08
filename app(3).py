@@ -1,38 +1,56 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 
-st.title(" Interactive Data Dashboard")
+# Page config
+st.set_page_config(page_title="📊 Interactive Data Dashboard", layout="wide")
 
-#create file upload widget (an interactive UI element that allow users to provide input)
-uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+st.title("📈 Interactive Data Dashboard")
+st.markdown("""
+Upload any CSV file to explore the data, filter it, and visualize it — all from your browser.  
+Built with [Streamlit](https://streamlit.io/) 🚀  
+""")
+
+# Upload file
+uploaded_file = st.file_uploader("📂 Upload your CSV file", type="csv", help="Make sure it's a clean .csv file.")
+
 if uploaded_file is not None:
-    st.write("File uploaded...")
+    st.success("✅ File successfully uploaded!")
     df = pd.read_csv(uploaded_file)
 
-    st.subheader("Data Preview")
-    st.write(df.head())
-    st.write(df.tail())
-    
-    st.subheader("Data Summary")
-    st.write(df.describe()) 
-    # gives a summary of the statistical properties on numerical data in the df dataframe eg. count, std(spread of the data), 25% - 25% of data falls below xx value
-    
-    st.subheader("Filter Data")
-    columns = df.columns.tolist() #get all column names from the dataframe df as a simple list or regular python list.
-    selected_column = st.selectbox("Select colum to filter by", columns)
+    with st.expander("🔍 Data Preview"):
+        st.write("First 5 Rows:")
+        st.dataframe(df.head())
+        st.write("Last 5 Rows:")
+        st.dataframe(df.tail())
 
-    unique_values = df[selected_column].unique() #access all the values in a specific column of df and return non repeating columns
-    selected_value = st.selectbox("Select value", unique_values)
+    with st.expander("📊 Data Summary"):
+        st.dataframe(df.describe())
 
-    filtered_df = df[df[selected_column] == selected_value] #filter the df to show only the rows where the values in a specific column matches a certain value.
-    st.write(filtered_df)
+    st.markdown("### 🔎 Filter the Data")
+    columns = df.columns.tolist()
+    selected_column = st.selectbox("Select a column to filter by", columns)
 
-    st.header("Plot Data")
-    x_column = st.selectbox("Select x_axis column", columns)
-    y_column = st.selectbox("Select y_axis column", columns)
+    unique_values = df[selected_column].dropna().unique()
+    selected_value = st.selectbox(f"Select a value from '{selected_column}'", unique_values)
+
+    filtered_df = df[df[selected_column] == selected_value]
+    st.dataframe(filtered_df)
+
+    st.markdown("### 📈 Plot Your Data")
+    x_column = st.selectbox("Select X-axis", columns)
+    y_column = st.selectbox("Select Y-axis", columns)
+
+    chart_type = st.radio("Choose a chart type", ["Line Chart", "Bar Chart", "Area Chart"])
 
     if st.button("Generate Plot"):
-        st.line_chart(filtered_df.set_index(x_column)[y_column])
-else: 
-    st.write("waiting on file upload...")
+        chart_data = filtered_df[[x_column, y_column]].dropna()
+        chart_data = chart_data.set_index(x_column)
+
+        if chart_type == "Line Chart":
+            st.line_chart(chart_data)
+        elif chart_type == "Bar Chart":
+            st.bar_chart(chart_data)
+        elif chart_type == "Area Chart":
+            st.area_chart(chart_data)
+else:
+    st.warning("👈 Please upload a CSV file to get started.")
