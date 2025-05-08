@@ -40,17 +40,18 @@ if uploaded_file is not None:
     numeric_columns = filtered_df.select_dtypes(include='number').columns.tolist()
 
     if len(numeric_columns) < 2:
-        st.warning("Need at least two numeric columns to plot a line chart.")
+        st.warning("You need at least two numeric columns to plot a line chart.")
     else:
-        x_column = st.selectbox("Select X-axis", numeric_columns)
+        x_column = st.selectbox("Select X-axis (must be numeric)", numeric_columns)
         y_column = st.selectbox("Select Y-axis", numeric_columns)
 
         if st.button("Generate Line Chart"):
             try:
                 chart_data = filtered_df[[x_column, y_column]].dropna()
-                chart_data = chart_data.set_index(x_column)
-                st.line_chart(chart_data)
+                # Fix: Reset index so X-axis is 1-dimensional
+                chart_data = chart_data.sort_values(by=x_column)
+                st.line_chart(chart_data.set_index(x_column))
             except Exception as e:
-                st.error(f"Error generating chart: {e}")
+                st.error(f"⚠️ Could not generate chart: {e}")
 else:
     st.warning("👈 Please upload the 2019 World Happiness Report CSV to begin.")
