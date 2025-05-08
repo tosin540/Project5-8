@@ -2,16 +2,16 @@ import streamlit as st
 import pandas as pd
 
 # Page config
-st.set_page_config(page_title="📊 Interactive Data Dashboard", layout="wide")
+st.set_page_config(page_title="🌍 2019 World Happiness Report", layout="wide")
 
-st.title("📈 Interactive Data Dashboard")
+st.title("🌍 2019 World Happiness Report Dashboard")
 st.markdown("""
-Upload any CSV file to explore the data, filter it, and visualize it — all from your browser.  
-Built with [Streamlit](https://streamlit.io/) 🚀  
+Explore, filter, and visualize data from the **2019 World Happiness Report**.  
+Upload the dataset to get started — powered by [Streamlit](https://streamlit.io/) 🚀
 """)
 
-# Upload file
-uploaded_file = st.file_uploader("📂 Upload your CSV file", type="csv", help="Make sure it's a clean .csv file.")
+# File uploader
+uploaded_file = st.file_uploader("📂 Upload your '2019_world_happiness_report.csv' file", type="csv")
 
 if uploaded_file is not None:
     st.success("✅ File successfully uploaded!")
@@ -53,4 +53,4 @@ if uploaded_file is not None:
         elif chart_type == "Area Chart":
             st.area_chart(chart_data)
 else:
-    st.warning("👈 Please upload a CSV file to get started.")
+    st.warning("👈 Please upload the 2019 World Happiness Report CSV to begin.")
