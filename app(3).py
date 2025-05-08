@@ -1,67 +1,52 @@
 import streamlit as st
 import pandas as pd
 
-# 🎯 Page config
-st.set_page_config(page_title="🌍 2019 World Happiness Report", layout="wide")
+st.set_page_config(page_title="🌍 World Happiness Report 2019", layout="wide")
+st.title("🌍 World Happiness Report 2019 Dashboard")
 
-# 📌 Function to ensure unique column names
+# 🧠 Safe function to deduplicate column names
 def deduplicate_columns(columns):
     seen = {}
-    new_columns = []
+    result = []
     for col in columns:
         if col in seen:
             seen[col] += 1
-            new_columns.append(f"{col}_{seen[col]}")
+            result.append(f"{col}_{seen[col]}")
         else:
             seen[col] = 0
-            new_columns.append(col)
-    return new_columns
-
-# 🏷️ App Title and Description
-st.title("🌍 2019 World Happiness Report Dashboard")
-st.markdown("""
-Explore, filter, and visualize data from the **2019 World Happiness Report**.  
-Upload the dataset to get started — powered by [Streamlit](https://streamlit.io/) 🚀
-""")
+            result.append(col)
+    return result
 
 # 📁 File uploader
-uploaded_file = st.file_uploader("📂 Upload your '2019_world_happiness_report.csv' file", type="csv")
+uploaded_file = st.file_uploader("📂 Upload your 2019 World Happiness Report CSV", type="csv")
 
 if uploaded_file is not None:
     st.success("✅ File successfully uploaded!")
-    
-    # 🧼 Load and clean data
+
+    # Load and deduplicate columns
     df = pd.read_csv(uploaded_file)
     df.columns = deduplicate_columns(df.columns)
 
-    # 📊 Data preview
-    with st.expander("🔍 Data Preview"):
-        st.write("First 5 Rows:")
-        st.dataframe(df.head())
-        st.write("Last 5 Rows:")
-        st.dataframe(df.tail())
+    st.subheader("🔍 Data Preview")
+    st.dataframe(df.head())
 
-    # 📈 Data summary
-    with st.expander("📊 Data Summary"):
-        st.dataframe(df.describe())
+    st.subheader("📊 Data Summary")
+    st.dataframe(df.describe())
 
-    # 🔎 Filter data
-    st.markdown("### 🔎 Filter the Data")
+    st.subheader("🔎 Filter Data")
     columns = df.columns.tolist()
     selected_column = st.selectbox("Select a column to filter by", columns)
-
     unique_values = df[selected_column].dropna().unique()
-    selected_value = st.selectbox(f"Select a value from '{selected_column}'", unique_values)
+    selected_value = st.selectbox("Select a value", unique_values)
 
     filtered_df = df[df[selected_column] == selected_value]
     st.dataframe(filtered_df)
 
-    # 📉 Plot line chart
-    st.markdown("### 📈 Line Chart Visualization")
+    st.subheader("📈 Plot Data (Line Chart Only)")
     numeric_columns = filtered_df.select_dtypes(include='number').columns.tolist()
 
     if len(numeric_columns) < 2:
-        st.warning("You need at least two numeric columns to plot a line chart.")
+        st.warning("Need at least two numeric columns to plot.")
     else:
         x_column = st.selectbox("Select X-axis", numeric_columns)
         y_column = st.selectbox("Select Y-axis", numeric_columns)
@@ -73,4 +58,4 @@ if uploaded_file is not None:
             except Exception as e:
                 st.error(f"⚠️ Could not generate chart: {e}")
 else:
-    st.warning("👈 Please upload the 2019 World Happiness Report CSV to begin.")
+    st.info("👈 Please upload your 2019 World Happiness Report CSV to begin.")
