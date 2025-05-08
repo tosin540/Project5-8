@@ -15,7 +15,10 @@ uploaded_file = st.file_uploader("📂 Upload your '2019_world_happiness_report.
 
 if uploaded_file is not None:
     st.success("✅ File successfully uploaded!")
+
+    # 🛠 Fix duplicate column names automatically
     df = pd.read_csv(uploaded_file)
+    df.columns = pd.io.parsers.ParserBase({'names': df.columns})._maybe_dedup_names(df.columns)
 
     with st.expander("🔍 Data Preview"):
         st.write("First 5 Rows:")
@@ -42,13 +45,12 @@ if uploaded_file is not None:
     if len(numeric_columns) < 2:
         st.warning("You need at least two numeric columns to plot a line chart.")
     else:
-        x_column = st.selectbox("Select X-axis (must be numeric)", numeric_columns)
+        x_column = st.selectbox("Select X-axis", numeric_columns)
         y_column = st.selectbox("Select Y-axis", numeric_columns)
 
         if st.button("Generate Line Chart"):
             try:
                 chart_data = filtered_df[[x_column, y_column]].dropna()
-                # Fix: Reset index so X-axis is 1-dimensional
                 chart_data = chart_data.sort_values(by=x_column)
                 st.line_chart(chart_data.set_index(x_column))
             except Exception as e:
