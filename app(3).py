@@ -36,21 +36,21 @@ if uploaded_file is not None:
     filtered_df = df[df[selected_column] == selected_value]
     st.dataframe(filtered_df)
 
-    st.markdown("### 📈 Plot Your Data")
-    x_column = st.selectbox("Select X-axis", columns)
-    y_column = st.selectbox("Select Y-axis", columns)
+    st.markdown("### 📈 Line Chart Visualization")
+    numeric_columns = filtered_df.select_dtypes(include='number').columns.tolist()
 
-    chart_type = st.radio("Choose a chart type", ["Line Chart", "Bar Chart", "Area Chart"])
+    if len(numeric_columns) < 2:
+        st.warning("Need at least two numeric columns to plot a line chart.")
+    else:
+        x_column = st.selectbox("Select X-axis", numeric_columns)
+        y_column = st.selectbox("Select Y-axis", numeric_columns)
 
-    if st.button("Generate Plot"):
-        chart_data = filtered_df[[x_column, y_column]].dropna()
-        chart_data = chart_data.set_index(x_column)
-
-        if chart_type == "Line Chart":
-            st.line_chart(chart_data)
-        elif chart_type == "Bar Chart":
-            st.bar_chart(chart_data)
-        elif chart_type == "Area Chart":
-            st.area_chart(chart_data)
+        if st.button("Generate Line Chart"):
+            try:
+                chart_data = filtered_df[[x_column, y_column]].dropna()
+                chart_data = chart_data.set_index(x_column)
+                st.line_chart(chart_data)
+            except Exception as e:
+                st.error(f"Error generating chart: {e}")
 else:
     st.warning("👈 Please upload the 2019 World Happiness Report CSV to begin.")
